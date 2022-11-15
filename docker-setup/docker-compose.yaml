@@ -1,7 +1,11 @@
 version: '3'
 
-services :
-  php :
+networks:
+  laravel:
+    driver: bridge
+
+services:
+  php:
     build:
       context: ./php
       dockerfile: Dockerfile
@@ -10,8 +14,38 @@ services :
     restart: unless-stopped
     image: php-elitery
     container_name: phpAlpineLaravelTest
+    working_dir: /var/www/
     volumes:
-      - ../:/var/www
-    ports:
-      - 8000:8000
-    entrypoint: php artisan serve --host=0.0.0.0
+      - ../laravelapp:/var/www
+    networks:
+      - laravel
+        #entrypoint: php artisan serve --host=0.0.0.0
+
+  db:
+    image: mysql:latest
+    container_name: elitery-database
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ../mysql/:/docker-entrypoint-initdb.d
+    networks:
+      - laravel
+
+  nginx:
+    image: nginx:${NGINXVERS}
+    container_name: elitery-nginx
+    restart: unless-stopped
+    ports: 
+      - 8000:80
+    volumes:
+      - ../laravelapp:/var/www
+      - ../nginx:/etc/nginx/conf.d/
+    networks:
+      - laravel
+
