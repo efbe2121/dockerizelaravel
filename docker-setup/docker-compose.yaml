@@ -1,0 +1,17 @@
+version: '3'
+
+services :
+  php :
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+      args:
+        phpvers: ${PHPVERS}
+    restart: unless-stopped
+    image: php-elitery
+    container_name: phpAlpineLaravelTest
+    volumes:
+      - ../:/var/www
+    ports:
+      - 8000:8000
+    entrypoint: php artisan serve --host=0.0.0.0
