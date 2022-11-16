@@ -1,9 +1,5 @@
 version: '3'
 
-networks:
-  laravel:
-    driver: bridge
-
 services:
   php:
     build:
@@ -17,9 +13,7 @@ services:
     working_dir: /var/www/
     volumes:
       - ../laravelapp:/var/www
-    networks:
-      - laravel
-        #entrypoint: php artisan serve --host=0.0.0.0
+    #entrypoint: php artisan serve --host=0.0.0.0
 
   db:
     image: mysql:latest
@@ -34,18 +28,3 @@ services:
       SERVICE_NAME: mysql
     volumes:
       - ../mysql/:/docker-entrypoint-initdb.d
-    networks:
-      - laravel
-
-  nginx:
-    image: nginx:${NGINXVERS}
-    container_name: elitery-nginx
-    restart: unless-stopped
-    ports: 
-      - 8000:80
-    volumes:
-      - ../laravelapp:/var/www
-      - ../nginx:/etc/nginx/conf.d/
-    networks:
-      - laravel
-
