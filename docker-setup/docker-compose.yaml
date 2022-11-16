@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 
 services:
   php:
@@ -7,12 +7,21 @@ services:
       dockerfile: Dockerfile
       args:
         phpvers: ${PHPVERS}
-    restart: unless-stopped
+        uid: ${USERID}
     image: php-elitery
     container_name: phpAlpineLaravelTest
-    working_dir: /var/www/
+    restart: unless-stopped
+    ports:
+      - 8000:9000
+    environment:
+      - APACHE_RUN_USER=#1000
+      - APACHE_RUN_GROUP=#1000
     volumes:
       - ../laravelapp:/var/www
+    networks:
+      laravel:
+        aliases:
+          - phpapp
     #entrypoint: php artisan serve --host=0.0.0.0
 
   db:
@@ -24,7 +33,13 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
     volumes:
       - ../mysql/:/docker-entrypoint-initdb.d
+    networks:
+      laravel:
+        aliases:
+          - dbapp
+
+networks:
+  laravel:
+    name: eliterylaravel
