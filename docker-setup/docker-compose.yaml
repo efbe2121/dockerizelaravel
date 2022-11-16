@@ -1,21 +1,30 @@
-version: '3.7'
+version: '3'
 
 services:
-  php:
+  phpapp:
     build:
       context: ./php
       dockerfile: Dockerfile
     image: php-elitery
     container_name: phpAlpineLaravelTest
     restart: unless-stopped
-    ports:
-      - 9000:9000
-    environment:
-      - APACHE_RUN_USER=#1000
-      - APACHE_RUN_GROUP=#1000
+    networks:
+      - laravelbackend
     volumes:
-      - ../laravelapp:/var/www/app
-    #entrypoint: php artisan serve --host=0.0.0.0
+      - ../laravelapp/:/var/www/html/
+    working_dir: /var/www/html
+
+  nginxweb:
+    image: nginx:alpine
+    container_name: nginxAlpineLaravelTest
+    restart: unless-stopped
+    networks:
+      - laravelbackend
+    ports:
+      - "8000:80"
+    volumes:
+      - ../laravelapp/:/var/www/html/
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
 
   db:
     image: mysql:5.7
@@ -27,6 +36,16 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
     ports:
-      - 3306:3306
+      - "3306:3306"
+    networks:
+      - laravelbackend
     volumes:
-      - ../mysql/:/docker-entrypoint-initdb.d
+      - mysqldata:/var/lib/mysql/
+
+networks:
+  laravelbackend:
+    driver: bridge
+
+volumes:
+  mysqldata:
+    driver: local
