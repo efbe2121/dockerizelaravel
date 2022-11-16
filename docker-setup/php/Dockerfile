@@ -1,23 +1,21 @@
-ARG phpvers
+FROM php:7.4.33-fpm-alpine
 
-FROM php:${PHPVERS}-fpm-alpine
+RUN apk add --no-cache apache2 php-apache2 zlib-dev icu-dev libpng-dev icu-libs icu-data-full
 
-RUN apk add apache2-proxy
-RUN echo "ServerName laravel-app.local" >> /etc/apache2/httpd.conf
-RUN mkdir /var/www/
-ENV APACHE_DOCUMENT_ROOT=
-RUN sed -ri -e 's!/var/www/localhost!/var/www/!g' /etc/apache2/httpd.conf
+ENV APACHE_DOCUMENT_ROOT /var/www/app/public
+RUN mkdir /var/www/app
 
-RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
-
-RUN docker-php-ext-install pdo pdo_mysql sockets
+RUN docker-php-ext-install pdo pdo_mysql sockets gd intl mysqli
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-ARG uid
-RUN adduser -u $uid -D elitery-test
-RUN addgroup elitery-test www-data
-RUN addgroup elitery-test root
+RUN chmod -R 755 /var/www/app
+RUN chown -R www-data:www-data /var/www/app
 
-RUN mkdir -p /home/eliterytest/.composer && \
-    chown -R eliterytest:eliterytest /home/eliterytest
+# RUN adduser -u 1000 -D elitery-test
+# RUN addgroup elitery-test elitery-test
+# RUN addgroup elitery-test www-data
+# RUN addgroup elitery-test root
+
+# RUN mkdir -p /home/elitery-test/.composer && \
+#     chown -R elitery-test:elitery-test /home/elitery-test
